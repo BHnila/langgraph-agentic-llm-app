@@ -15,10 +15,8 @@ services:
       - app
       - langfuse-web
       - lightrag
-    links:
-      - app
-      - langfuse-web
-      - lightrag
+    networks:
+      - lightrag_net
 
   app:
     build:
@@ -39,38 +37,57 @@ services:
 
   lightrag:
     build:
-      context: https://github.com/HKUDS/LightRAG.git#main
+      context: https://github.com/HKUDS/LightRAG.git#v1.2.1
       dockerfile: Dockerfile
     image: lightrag:latest
     container_name: lightrag
     expose:
       - "9621"
     volumes:
-      - ./data/rag_storage:/app/data/rag_storage
-      - ./data/inputs:/app/data/inputs
-      - ./config.ini:/app/config.ini
-      - ./.env:/app/.env
+      - ./lightrag/data/rag_storage:/app/data/rag_storage
+      - ./lightrag/data/inputs:/app/data/inputs
+      - ./lightrag/config.ini:/app/config.ini
+    environment:
+      - TZ=UTC
+      - LIGHTRAG_KV_STORAGE=MongoKVStorage
+      - LIGHTRAG_VECTOR_STORAGE=MongoVectorDBStorage
+      - LIGHTRAG_GRAPH_STORAGE=MongoGraphStorage
+      - LIGHTRAG_DOC_STATUS_STORAGE=MongoDocStatusStorage
+      - LLM_BINDING=openai
+      - LLM_MODEL=gpt-4o-mini
+      - LLM_BINDING_HOST=https://api.openai.com/v1
+      - LLM_BINDING_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - EMBEDDING_BINDING=openai
+      - EMBEDDING_BINDING_HOST=https://api.openai.com/v1
+      - EMBEDDING_MODEL=text-embedding-3-large
+      - SUMMARY_LANGUAGE=Slovak
     env_file:
       - .env
     restart: unless-stopped
-    environment:
-      - TZ=UTC
-      - CHROMADB_HOST=chromadb
-      - CHROMADB_PORT=8000
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
-      - chromadb
+      mongodb:
+        condition: service_healthy
     networks:
       - lightrag_net
 
-  chromadb:
-    image: chromadb/chroma:latest
-    container_name: chromadb
-    ports:
-      - "8000:8000"
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
     volumes:
-      - chromadb_data:/data
-    restart: unless-stopped
+      - mongodb-data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+    expose:
+      - "27017"
+    healthcheck:
+      test: |
+        mongosh "mongodb://admin:admin@localhost:27017/admin" --eval "db.adminCommand('ping')"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - lightrag_net
 
@@ -117,6 +134,8 @@ services:
       REDIS_HOST: ${REDIS_HOST:-redis}
       REDIS_PORT: ${REDIS_PORT:-6379}
       REDIS_AUTH: ${REDIS_AUTH:-myredissecret}
+    networks:
+      - langfuse_net
 
   langfuse-web:
     image: langfuse/langfuse:3
@@ -144,6 +163,9 @@ services:
       LANGFUSE_READ_FROM_CLICKHOUSE_ONLY: ${LANGFUSE_READ_FROM_CLICKHOUSE_ONLY:-true}
       LANGFUSE_RETURN_FROM_CLICKHOUSE: ${LANGFUSE_RETURN_FROM_CLICKHOUSE:-true}
       KEEP_ALIVE_TIMEOUT: ${KEEP_ALIVE_TIMEOUT:-65s}
+    networks:
+      - lightrag_net
+      - langfuse_net
 
 
   langfuse-postgres:
@@ -163,6 +185,8 @@ services:
       - "5433"
     volumes:
       - langfuse-data:/var/lib/postgresql/data
+    networks:
+      - langfuse_net
 
   clickhouse:
     image: clickhouse/clickhouse-server:latest
@@ -181,8 +205,8 @@ services:
       timeout: 5s
       retries: 10
       start_period: 1s
-    links:
-      - langfuse-postgres
+    networks:
+      - langfuse_net
 
   minio:
     image: minio/minio
@@ -202,6 +226,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 1s
+    networks:
+      - langfuse_net
 
   redis:
     image: redis:7
@@ -216,9 +242,13 @@ services:
       interval: 3s
       timeout: 10s
       retries: 10
+    networks:
+      - langfuse_net
 
 networks:
   lightrag_net:
+    driver: bridge
+  langfuse_net:
     driver: bridge
   
 volumes:
@@ -228,5 +258,5 @@ volumes:
     driver: local
   langfuse-minio-data:
     driver: local
-  chromadb_data:
+  mongodb-data:
     driver: local

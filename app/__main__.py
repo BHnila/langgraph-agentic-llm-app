@@ -3,19 +3,14 @@ import streamlit as st
 
 from agentic_flow.flow import compile_graph, invoke_graph
 from utils import streamhandler
-from utils.lightrag import spawn_lightrag_instance, feed_documents_to_lightrag
 
 
 class Main:
     def __init__(self):
         st.session_state.messages = []
-        st.session_state.rag = spawn_lightrag_instance()
         st.session_state.graph = compile_graph()
 
     def chat(self):
-
-        with st.sidebar:
-            st.button("Ingest docs", on_click=feed_documents_to_lightrag, args=("/app/docs", st.session_state.rag,))
 
         # Accept user input
         if prompt := st.chat_input("What is on your mind, dear AI enjoyer?", key="chat_input"):
