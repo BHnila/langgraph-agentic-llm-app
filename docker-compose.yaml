@@ -52,11 +52,9 @@ services:
     environment:
       - TZ=UTC
       - LIGHTRAG_KV_STORAGE=MongoKVStorage
-      - LIGHTRAG_VECTOR_STORAGE=ChromaVectorDBStorage
+      - LIGHTRAG_VECTOR_STORAGE=MongoVectorDBStorage
       - LIGHTRAG_GRAPH_STORAGE=MongoGraphStorage
       - LIGHTRAG_DOC_STATUS_STORAGE=MongoDocStatusStorage
-      - CHROMADB_HOST=chromadb
-      - CHROMADB_PORT=8000
       - LLM_BINDING=openai
       - LLM_MODEL=gpt-4o-mini
       - LLM_BINDING_HOST=https://api.openai.com/v1
@@ -70,47 +68,22 @@ services:
     env_file:
       - .env
     restart: unless-stopped
-    depends_on:
-      mongodb:
-        condition: service_healthy
     networks:
       - lightrag_net
 
   mongodb:
-    image: mongo:latest
-    container_name: mongodb
+    hostname: mongodb
+    image: mongodb/mongodb-atlas-local
+    environment:
+      - MONGODB_INITDB_ROOT_USERNAME=admin
+      - MONGODB_INITDB_ROOT_PASSWORD=admin
     volumes:
       - mongodb-data:/data/db
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=admin
+      - mongodb-config:/data/configdb
     expose:
       - "27017"
-    healthcheck:
-      test: |
-        mongosh "mongodb://admin:admin@localhost:27017/admin" --eval "db.adminCommand('ping')"
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
     networks:
       - lightrag_net
-
-  chromadb:
-    image: chromadb/chroma:latest
-    container_name: chromadb
-    environment:
-      - IS_PERSISTENT=true
-      - CHROMA_DB_PATH=/data
-      - CHROMA_HOST=0.0.0.0
-      - CHROMA_PORT=80000
-    expose:
-      - "8000"
-    networks:
-      - lightrag_net
-    volumes:
-      - chromadb-data:/data
-    restart: unless-stopped
 
   langfuse-worker:
     image: langfuse/langfuse-worker:3
@@ -280,5 +253,5 @@ volumes:
     driver: local
   mongodb-data:
     driver: local
-  chromadb-data:
+  mongodb-config:
     driver: local

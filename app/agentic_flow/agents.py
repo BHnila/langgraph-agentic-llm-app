@@ -17,7 +17,7 @@ llm = ChatOpenAI(
     model="openai/gpt-4o-mini",  # Specify the desired model
     openai_api_key=os.getenv("OPENROUTER_API_KEY"),
     openai_api_base="https://openrouter.ai/api/v1",
-    temperature=0.7,  # Adjust the `temperature as needed
+    temperature=0.4,  # Adjust the `temperature as needed
 )
 
 
