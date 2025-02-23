@@ -1,11 +1,16 @@
 import os
-from langchain_core.messages import SystemMessage
-from langgraph.prebuilt import ToolNode
+import streamlit as st
+from langchain_core.messages import SystemMessage, BaseMessage
+from langchain_core.prompts.chat import ChatPromptTemplate, MessagesPlaceholder
+from typing import TypedDict, Annotated, Sequence
+import operator
 from langchain_openai import ChatOpenAI
-from langgraph.graph import MessagesState
 
-from agentic_flow.tools import retriever
+from agentic_flow.tools import retriever, fei_stu_web_search
 
+
+class AgentState(TypedDict):
+    messages: Annotated[list[BaseMessage], operator.add]
 
 
 llm = ChatOpenAI(
@@ -15,17 +20,22 @@ llm = ChatOpenAI(
     temperature=0.7,  # Adjust the `temperature as needed
 )
 
-# Step 1: Generate an AIMessage that may include a tool-call to be sent.
-def query_or_respond(state: MessagesState):
+
+def retrieve_or_respond(state: AgentState):
     """Generate tool call for retrieval or respond."""
     llm_with_tools = llm.bind_tools([retriever])
     response = llm_with_tools.invoke(state["messages"])
-    # MessagesState appends messages to state instead of overwriting
     return {"messages": [response]}
 
 
-# Step 3: Generate a response using the retrieved content.
-def generate(state: MessagesState):
+def search_or_respond(state: AgentState):
+    """Generate tool call for retrieval or respond."""
+    llm_with_tools = llm.bind_tools([fei_stu_web_search])
+    response = llm_with_tools.invoke(state["messages"])
+    return {"messages": [response]}
+
+
+def generate(state: AgentState):
     """Generate answer."""
     # Get generated ToolMessages
     recent_tool_messages = []
@@ -36,14 +46,13 @@ def generate(state: MessagesState):
             break
     tool_messages = recent_tool_messages[::-1]
 
-    # Format into prompt
     docs_content = "\n\n".join(doc.content for doc in tool_messages)
     system_message_content = (
-        "You are an assistant for question-answering tasks. "
+        "You are an assistant, assisting students and employees "
+        "of Faculty of Electrical Engineering and Informatics (FEI STU) "
         "Use the following pieces of retrieved context to answer "
         "the question. If you don't know the answer, say that you "
-        "don't know. Use three sentences maximum and keep the "
-        "answer concise."
+        "don't know. Keep the answer concise."
         "\n\n"
         f"{docs_content}"
     )

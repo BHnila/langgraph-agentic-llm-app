@@ -1,6 +1,5 @@
 from langchain.callbacks.base import BaseCallbackHandler, AsyncCallbackHandler
 import time
-import asyncio
 
 """
 
@@ -37,7 +36,6 @@ class StreamHandler(BaseCallbackHandler):
         self.text = initial_text
         self.display_method = display_method
 
-    # Appends a new token to the text and updates the display using the specified method
     def on_llm_new_token(self, token: str, **kwargs: dict) -> None:
 
         self.text += token

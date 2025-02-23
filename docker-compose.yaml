@@ -17,6 +17,7 @@ services:
       - lightrag
     networks:
       - lightrag_net
+      - langfuse_net
 
   app:
     build:
@@ -34,10 +35,11 @@ services:
       - lightrag
     networks:
       - lightrag_net
+      - langfuse_net
 
   lightrag:
     build:
-      context: https://github.com/HKUDS/LightRAG.git#v1.2.1
+      context: https://github.com/HKUDS/LightRAG.git
       dockerfile: Dockerfile
     image: lightrag:latest
     container_name: lightrag
@@ -50,9 +52,11 @@ services:
     environment:
       - TZ=UTC
       - LIGHTRAG_KV_STORAGE=MongoKVStorage
-      - LIGHTRAG_VECTOR_STORAGE=MongoVectorDBStorage
+      - LIGHTRAG_VECTOR_STORAGE=ChromaVectorDBStorage
       - LIGHTRAG_GRAPH_STORAGE=MongoGraphStorage
       - LIGHTRAG_DOC_STATUS_STORAGE=MongoDocStatusStorage
+      - CHROMADB_HOST=chromadb
+      - CHROMADB_PORT=8000
       - LLM_BINDING=openai
       - LLM_MODEL=gpt-4o-mini
       - LLM_BINDING_HOST=https://api.openai.com/v1
@@ -61,6 +65,7 @@ services:
       - EMBEDDING_BINDING=openai
       - EMBEDDING_BINDING_HOST=https://api.openai.com/v1
       - EMBEDDING_MODEL=text-embedding-3-large
+      - EMBEDDING_DIM=3072
       - SUMMARY_LANGUAGE=Slovak
     env_file:
       - .env
@@ -90,6 +95,22 @@ services:
       start_period: 30s
     networks:
       - lightrag_net
+
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: chromadb
+    environment:
+      - IS_PERSISTENT=true
+      - CHROMA_DB_PATH=/data
+      - CHROMA_HOST=0.0.0.0
+      - CHROMA_PORT=80000
+    expose:
+      - "8000"
+    networks:
+      - lightrag_net
+    volumes:
+      - chromadb-data:/data
+    restart: unless-stopped
 
   langfuse-worker:
     image: langfuse/langfuse-worker:3
@@ -152,10 +173,10 @@ services:
       LANGFUSE_INIT_ORG_ID: ${LANGFUSE_INIT_ORG_ID:-cm4rbjrq30001sgjjb3r7iua7}
       LANGFUSE_INIT_ORG_NAME: ${LANGFUSE_INIT_ORG_NAME:-aiteam}
       LANGFUSE_INIT_PROJECT_ID: ${LANGFUSE_INIT_PROJECT_ID:-cm4rbjxkg0006sgjjg0fxvk9b}
-      LANGFUSE_INIT_PROJECT_NAME: ${LANGFUSE_INIT_PROJECT_NAME:-stubarag}
-      LANGFUSE_INIT_PROJECT_PUBLIC_KEY: ${LANGFUSE_INIT_PROJECT_PUBLIC_KEY:-sk}
-      LANGFUSE_INIT_PROJECT_SECRET_KEY: ${LANGFUSE_INIT_PROJECT_SECRET_KEY:-sk}
-      LANGFUSE_INIT_USER_EMAIL: ${LANGFUSE_INIT_USER_EMAIL:-admin@agentkovac.sk}
+      LANGFUSE_INIT_PROJECT_NAME: ${LANGFUSE_INIT_PROJECT_NAME:-demodruhymeetup}
+      LANGFUSE_INIT_PROJECT_PUBLIC_KEY: ${LANGFUSE_INIT_PROJECT_PUBLIC_KEY:-pk-lf-57d0dc66-7822-439c-b35f-7d52c6c66aca}
+      LANGFUSE_INIT_PROJECT_SECRET_KEY: ${LANGFUSE_INIT_PROJECT_SECRET_KEY:-sk-lf-eaca059f-5d00-4fd9-a4da-b0ab0a689b02}
+      LANGFUSE_INIT_USER_EMAIL: ${LANGFUSE_INIT_USER_EMAIL:-admin@druhymeetup.sk}
       LANGFUSE_INIT_USER_NAME: ${LANGFUSE_INIT_USER_NAME:-admin}
       LANGFUSE_INIT_USER_PASSWORD: ${LANGFUSE_INIT_USER_PASSWORD:-admin123}
       LANGFUSE_SDK_CI_SYNC_PROCESSING_ENABLED: ${LANGFUSE_SDK_CI_SYNC_PROCESSING_ENABLED:-false}
@@ -164,7 +185,6 @@ services:
       LANGFUSE_RETURN_FROM_CLICKHOUSE: ${LANGFUSE_RETURN_FROM_CLICKHOUSE:-true}
       KEEP_ALIVE_TIMEOUT: ${KEEP_ALIVE_TIMEOUT:-65s}
     networks:
-      - lightrag_net
       - langfuse_net
 
 
@@ -259,4 +279,6 @@ volumes:
   langfuse-minio-data:
     driver: local
   mongodb-data:
+    driver: local
+  chromadb-data:
     driver: local
