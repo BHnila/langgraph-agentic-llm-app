@@ -21,10 +21,10 @@ class Main:
         for message in st.session_state.messages:
             if isinstance(message, AIMessage):
                 with st.chat_message("assistant"):
-                    st.markdown(message["content"])
+                    st.markdown(message.content)
             else:
                 with st.chat_message("user"):
-                    st.markdown(message["content"])
+                    st.markdown(message.content)
 
         # Accept user input
         if prompt := st.chat_input("What is on your mind, dear AI enjoyer?", key="chat_input"):
@@ -60,5 +60,7 @@ class Main:
 
 
 if __name__ == "__main__":
-    main = Main()
-    main.chat()
+
+    if "main" not in st.session_state:
+        st.session_state.main = Main()
+    st.session_state.main.chat()
