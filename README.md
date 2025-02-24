@@ -1,10 +1,9 @@
 # LangGraph Agentic LLM App
 
 ## Overview
+LangGraph Agentic LLM App is a robust application designed to harness the power of large language models (LLMs) for diverse tasks. Built on the LangGraph agentic LLM framework, it integrates advanced technologies such as LightRAG for graph retrieval, Streamlit for the frontend, and MongoDB Atlas for both standard and vector storage. Additionally, it includes the LangFuse open-source LLM monitoring service.
 
-LangGraph Agentic LLM App is a powerful application designed to leverage the capabilities of large language models (LLMs) for various tasks. This README provides comprehensive instructions on how to use the application.
-
-*This app has been created as demo for my presentation at the Second AI Meetup at FEI STU, 27. 2. 2025.*
+This app has been created as demo for my presentation at the Second AI Meetup at FEI STU, 27. 2. 2025. The current conversational flow is tailored to provide information about FEI STU. You can customize the agent's system prompts to suit your specific requirements.
 
 ## Table of Contents
 
@@ -29,7 +28,7 @@ If you want to use just OpenAI API, replace `llm` variable in `app/agentic_flow/
 llm = ChatOpenAI(
     model="gpt-4o-mini",
     openai_api_key=os.getenv("OPENAI_API_KEY"),
-    temperature=0.4,
+    temperature=0.4
 )
 ```
 
@@ -56,7 +55,7 @@ Before you begin, ensure you have met the following requirements:
 3. **Run the application using Docker Compose:**
 
     ```bash
-    docker-compose up --build -d
+    docker compose up --build -d
     ```
 
 
