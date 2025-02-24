@@ -8,13 +8,13 @@ from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
 @tool
 def retriever(user_question: str) -> str:
     """
-    Retrieves docs based on the user's question.
+    Retrieves documents related to FEI STU based on the user's question.
 
     Args:
-        user_question (str): The question posed by the user.
+        user_question (str): The question asked by the user.
 
     Returns:
-        response: The retreived docs.
+        response: The retrieved documents in text format.
     """
 
     response = run(post_query_lightrag(user_question, "hybrid"))
@@ -24,7 +24,7 @@ def retriever(user_question: str) -> str:
 @tool
 def fei_stu_web_search(user_question: str) -> str:
     """
-    Perform a web search.
+    Performs a web search about FEI STU and related topics.
 
     Args:
         user_question (str): The search query provided by the user.
