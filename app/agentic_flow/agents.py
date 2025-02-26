@@ -40,7 +40,7 @@ class AgentState(TypedDict):
 
 # Client for LLMS hosted on OpenAI
 llm = ChatOpenAI(
-    model="gpt-4o",  # Specify the desired model
+    model="gpt-4o-mini",  # Specify the desired model
     openai_api_key=os.getenv("OPENAI_API_KEY"),
     temperature=0.4,  # Adjust the `temperature as needed
 )

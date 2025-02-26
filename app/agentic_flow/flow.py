@@ -77,8 +77,8 @@ def build_graph() -> StateGraph:
         tools_condition,
         {END: END, "tools": "web_search_runner"},
     )
-    workflow.add_edge("web_search_runner", "generate")
-    workflow.add_edge("generate", END)
+    workflow.add_edge("web_search_runner", "respond")
+    workflow.add_edge("respond", END)
 
     # Return the constructed workflow - graph
     return workflow

@@ -7,11 +7,7 @@ from agentic_flow.flow import compile_graph, invoke_graph
 from utils.streamhandler import StreamHandler
 
 
-"""
-
-A module that sets up an application (Initialize Streamlit session).
-
-"""
+### A module that sets up an application (Initialize Streamlit session).
 
 
 class Main:

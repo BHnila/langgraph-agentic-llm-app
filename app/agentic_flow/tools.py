@@ -4,7 +4,7 @@ from langchain_core.tools import tool
 from langchain_community.tools import DuckDuckGoSearchResults
 from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
 
-from app.utils.lightrag_api import post_query_lightrag
+from utils.lightrag_api import post_query_lightrag
 
 """
 
