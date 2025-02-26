@@ -1,12 +1,20 @@
-from utils.lightrag import post_query_lightrag
 from asyncio import run
+
 from langchain_core.tools import tool
 from langchain_community.tools import DuckDuckGoSearchResults
 from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
 
+from app.utils.lightrag_api import post_query_lightrag
+
+"""
+
+A module that contains Langchain tools for LLM agents.
+
+"""
+
 
 @tool
-def retriever(user_question: str) -> str:
+def fei_stu_retriever(user_question: str) -> str:
     """
     Retrieves documents related to FEI STU based on the user's question.
 
@@ -28,6 +36,7 @@ def fei_stu_web_search(user_question: str) -> str:
 
     Args:
         user_question (str): The search query provided by the user.
+
     Returns:
         str: The search results obtained from the DuckDuckGo API.
     """

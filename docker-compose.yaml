@@ -160,7 +160,6 @@ services:
     networks:
       - langfuse_net
 
-
   langfuse-postgres:
     image: postgres:latest
     container_name: langfuse-postgres

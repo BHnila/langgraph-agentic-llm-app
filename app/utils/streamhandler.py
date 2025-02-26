@@ -1,5 +1,6 @@
-from langchain.callbacks.base import BaseCallbackHandler, AsyncCallbackHandler
 import time
+
+from langchain.callbacks.base import BaseCallbackHandler
 
 """
 
@@ -45,7 +46,7 @@ class StreamHandler(BaseCallbackHandler):
             display_function(self.text)
         else:
             raise ValueError(f"Invalid display_method: {self.display_method}")
-        
+
     def on_static_string(self, string: str, delay: float = 0.0005, erase: bool = False, **kwargs: dict) -> None:
         """
         Appends characters from a static string to the text with a delay and updates the display using the specified method.
@@ -54,15 +55,17 @@ class StreamHandler(BaseCallbackHandler):
             - string (str): The static string to be displayed character by character.
             - delay (float): The delay in seconds between each character. Defaults to 0.1 seconds.
         """
-        if(erase):
+        if (erase):
             self.text = ""
 
         for char in string:
             self.text += char
-            display_function = getattr(self.container, self.display_method, None)
+            display_function = getattr(
+                self.container, self.display_method, None)
             # Verifies display method
             if display_function is not None:
                 display_function(self.text)
             else:
-                raise ValueError(f"Invalid display_method: {self.display_method}")
+                raise ValueError(
+                    f"Invalid display_method: {self.display_method}")
             time.sleep(delay)
