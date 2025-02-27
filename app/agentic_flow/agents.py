@@ -133,6 +133,7 @@ def search_or_respond(state: AgentState) -> AgentState:
                 "You are an assistant, assisting students and employees "
                 "of Faculty of Electrical Engineering and Informatics (FEI STU)."
                 "Decide whether to search the web or respond based on the provided docs. "
+                "If information in provided docs is uncertain, search the web."
                 "Keep the answer concise."
                 "\n\n"
                 "{docs_content}"
